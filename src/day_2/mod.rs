@@ -6,7 +6,7 @@ pub fn solve_1() {
     const GREEN_LIMIT: u32 = 13;
     const BLUE_LIMIT: u32 = 14;
 
-    let input = fs::read_to_string("inputs/day_2").unwrap();
+    let input = fs::read_to_string("inputs/day_2.txt").unwrap();
     let mut res = 0;
     'outer: for line in input.lines() {
         let game = parse_input(line);
@@ -39,7 +39,7 @@ pub fn solve_1() {
 }
 
 pub fn solve_2() {
-    let input = fs::read_to_string("inputs/day_2").unwrap();
+    let input = fs::read_to_string("inputs/day_2.txt").unwrap();
     let mut res = 0;
     for line in input.lines() {
         let game = parse_input(line);

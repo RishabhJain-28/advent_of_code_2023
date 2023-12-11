@@ -2,7 +2,7 @@ use std::fs;
 
 #[allow(dead_code)]
 pub fn solve_1() {
-    let input = fs::read_to_string("./inputs/day_1").unwrap();
+    let input = fs::read_to_string("./inputs/day_1.txt").unwrap();
     let mut res = 0;
     for line in input.lines() {
         let rest = line.trim_start_matches(char::is_alphabetic);
@@ -16,7 +16,7 @@ pub fn solve_1() {
 
 #[allow(dead_code)]
 pub fn solve_2() {
-    let input = fs::read_to_string("./inputs/day_1").unwrap();
+    let input = fs::read_to_string("./inputs/day_1.txt").unwrap();
     let mut res = 0;
     let patterns = [
         "one", "1", "two", "2", "three", "3", "four", "4", "five", "5", "six", "6", "seven", "7",
