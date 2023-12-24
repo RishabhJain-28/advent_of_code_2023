@@ -1,5 +1,6 @@
 use std::{fs, iter::zip};
 
+#[allow(dead_code)]
 pub fn solve_1() {
     let input = fs::read_to_string("inputs/day_6.txt").unwrap();
     let mut lines = input.lines();
@@ -29,5 +30,39 @@ pub fn solve_1() {
 
         res *= max_val - min_val + 1.0;
     }
+    println!("res = {}", res);
+}
+
+#[allow(dead_code)]
+pub fn solve_2() {
+    let input = fs::read_to_string("inputs/day_6.txt").unwrap();
+    let mut lines = input.lines();
+
+    let t: f64 = lines
+        .next()
+        .unwrap()
+        .split_once(":")
+        .unwrap()
+        .1
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join("")
+        .parse()
+        .unwrap();
+    let d: f64 = lines
+        .next()
+        .unwrap()
+        .split_once(":")
+        .unwrap()
+        .1
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join("")
+        .parse()
+        .unwrap();
+
+    let min_val = f64::floor((t - f64::sqrt(t * t - 4.0 * d)) / 2.0 + 1.0);
+    let max_val = f64::ceil((t + f64::sqrt(t * t - 4.0 * d)) / 2.0 - 1.0);
+    let res = max_val - min_val + 1.0;
     println!("res = {}", res);
 }
