@@ -8,5 +8,5 @@
 mod day_8;
 
 fn main() {
-    day_8::solve_1();
+    day_8::solve_2();
 }
