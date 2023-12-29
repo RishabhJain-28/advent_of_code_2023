@@ -1,5 +1,5 @@
 use std::{collections::HashMap, fs};
-
+#[allow(dead_code)]
 pub fn solve_1() {
     let input = fs::read_to_string("inputs/day_10.txt").unwrap();
 
@@ -23,6 +23,81 @@ pub fn solve_1() {
             }
         }
     }
+}
+
+#[allow(dead_code)]
+pub fn solve_2() {
+    let input = fs::read_to_string("inputs/day_10.txt").unwrap();
+
+    let mut matrix: Vec<Vec<Tile>> = Vec::new();
+
+    for line in input.lines() {
+        let mut row = Vec::new();
+        for c in line.chars() {
+            let tile = Tile::from_char(c);
+            row.push(tile);
+        }
+        matrix.push(row);
+    }
+    let mut vis = HashMap::new();
+
+    for i in 0..matrix.len() {
+        for j in 0..matrix[i].len() {
+            let tile = &matrix[i][j];
+            if *tile == Tile::Start {
+                let north = matrix[i - 1][j].is_continous(&Direction::South, false);
+                let south = matrix[i + 1][j].is_continous(&Direction::North, false);
+                let east = matrix[i][j + 1].is_continous(&Direction::West, false);
+                let west = matrix[i][j - 1].is_continous(&Direction::East, false);
+
+                matrix[i][j] = match (north, east, west, south) {
+                    (true, true, false, false) => Tile::NorthAndEast,
+                    (true, false, true, false) => Tile::NorthAndWest,
+                    (true, false, false, true) => Tile::Vertical,
+                    (false, true, true, false) => Tile::Horizontal,
+                    (false, false, true, true) => Tile::SouthAndWest,
+                    (false, true, false, true) => Tile::SouthAndEast,
+                    _ => Tile::Ground,
+                };
+                traverse_loop(&matrix, i, j, &mut vis);
+
+                break;
+            }
+        }
+    }
+    let mut count = 0;
+    for (i, row) in matrix.iter().enumerate() {
+        let mut should_count = false;
+        let mut prev = &Tile::Ground;
+        for (j, tile) in row.iter().enumerate() {
+            if let Some(have_vis) = vis.get(&(i, j)) {
+                if *have_vis {
+                    match *tile {
+                        Tile::Horizontal => {}
+                        Tile::Ground => {}
+                        Tile::Start => {}
+                        Tile::NorthAndEast => prev = tile,
+                        Tile::SouthAndEast => prev = tile,
+                        Tile::NorthAndWest => {
+                            if *prev == Tile::SouthAndEast {
+                                should_count = !should_count
+                            }
+                        }
+                        Tile::SouthAndWest => {
+                            if *prev == Tile::NorthAndEast {
+                                should_count = !should_count
+                            }
+                        }
+                        Tile::Vertical => should_count = !should_count,
+                    }
+                }
+            } else if should_count {
+                count += 1;
+            }
+        }
+    }
+
+    println!("res = {count}");
 }
 
 fn traverse_loop(
