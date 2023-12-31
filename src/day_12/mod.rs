@@ -1,4 +1,4 @@
-use std::{fs, str::FromStr};
+use std::{collections::HashMap, fs, str::FromStr};
 
 #[derive(Debug)]
 struct Record {
@@ -18,20 +18,60 @@ impl FromStr for Record {
         Ok(Record { list, pattern })
     }
 }
-
+#[allow(dead_code)]
 pub fn solve_1() {
+    let mut dp = HashMap::new();
+
     let input = fs::read_to_string("inputs/day_12.txt").unwrap();
     let res = input
         .lines()
         .map(|rec_str| rec_str.parse::<Record>().unwrap())
         .fold(0, |acc, record| {
-            let score = get_score(&record.pattern.chars().collect::<Vec<_>>(), &record.list);
+            let score = get_score(
+                &record.pattern.chars().collect::<Vec<_>>(),
+                &record.list,
+                &mut dp,
+            );
             score + acc
         });
     println!("res = {res}");
 }
 
-fn get_score(pat: &[char], list: &[usize]) -> usize {
+#[allow(dead_code)]
+pub fn solve_2() {
+    let input = fs::read_to_string("inputs/day_12.txt").unwrap();
+    let mut dp = HashMap::new();
+    let res = input
+        .lines()
+        .map(|rec_str| rec_str.parse::<Record>().unwrap())
+        .fold(0, |acc, record| {
+            let mut pat = Vec::new();
+            let mut list = Vec::new();
+            let pat_vec = record.pattern.chars().collect::<Vec<_>>();
+            for _ in 0..4 {
+                pat.extend(pat_vec.iter().chain([&'?']));
+            }
+            pat.extend(pat_vec.iter());
+
+            for _ in 0..5 {
+                list.extend(&record.list);
+            }
+
+            let score = get_score(&pat, &list, &mut dp);
+            score + acc
+        });
+    println!("res = {res}");
+}
+
+fn get_score(
+    pat: &[char],
+    list: &[usize],
+    dp: &mut HashMap<(Vec<char>, Vec<usize>), usize>,
+) -> usize {
+    if let Some(value) = dp.get(&(pat.to_vec(), list.to_vec())) {
+        return *value;
+    }
+
     if list.is_empty() {
         return (!pat.contains(&'#')) as usize;
     }
@@ -40,15 +80,27 @@ fn get_score(pat: &[char], list: &[usize]) -> usize {
         return 0;
     }
 
-    match pat[0] {
-        '#' => get_hash_score(pat, list),
-        '.' => get_score(&pat[1..], list),
-        '?' => get_score(&pat[1..], list) + get_hash_score(pat, list),
+    let score = match pat[0] {
+        '#' => get_hash_score(pat, list, dp),
+        '.' => get_score(&pat[1..], list, dp),
+        '?' => get_score(&pat[1..], list, dp) + get_hash_score(pat, list, dp),
         _ => panic!("founud invalid char input: {}", pat[0]),
-    }
+    };
+
+    dp.insert((pat.to_vec(), list.to_vec()), score);
+
+    score
 }
 
-fn get_hash_score(pat: &[char], list: &[usize]) -> usize {
+fn get_hash_score(
+    pat: &[char],
+    list: &[usize],
+    dp: &mut HashMap<(Vec<char>, Vec<usize>), usize>,
+) -> usize {
+    if let Some(value) = dp.get(&(pat.to_vec(), list.to_vec())) {
+        return *value;
+    }
+
     if pat.len() < list[0] || pat[0..list[0]].contains(&'.') {
         return 0;
     }
@@ -59,5 +111,5 @@ fn get_hash_score(pat: &[char], list: &[usize]) -> usize {
         return 0;
     }
 
-    get_score(&pat[list[0] + 1..], &list[1..])
+    get_score(&pat[list[0] + 1..], &list[1..], dp)
 }
