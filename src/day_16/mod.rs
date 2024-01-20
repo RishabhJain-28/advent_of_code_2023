@@ -65,7 +65,7 @@ impl Mirror {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct Grid {
     grid: HashMap<(i32, i32), Mirror>,
     visited: HashSet<(i32, i32, Direction)>,
@@ -131,7 +131,7 @@ impl Grid {
         self.visited.insert((i, j, dir))
     }
 }
-
+#[allow(dead_code)]
 pub fn solve_1() {
     let input = fs::read_to_string("inputs/day_16.txt").unwrap();
     let mut grid = Grid::default();
@@ -160,6 +160,63 @@ pub fn solve_1() {
     follow(&mut grid, Direction::East, 0, 0);
 
     println!("res = {}", grid.marked.len());
+}
+
+#[allow(dead_code)]
+pub fn solve_2() {
+    let input = fs::read_to_string("inputs/day_16.txt").unwrap();
+    let mut grid = Grid::default();
+    let mut height = 0;
+    for (i, line) in input.lines().enumerate() {
+        height += 1;
+        for (j, c) in line.chars().enumerate() {
+            let mirror = match c {
+                '|' => Mirror::VerticalSplitter,
+                '-' => Mirror::HorizontalSplitter,
+                '\\' => Mirror::AngledAnitClockwise,
+                '/' => Mirror::AngledlCockwise,
+                '.' => Mirror::Empty,
+                _ => {
+                    panic!("invalid character");
+                }
+            };
+            if mirror != Mirror::Empty {
+                grid.grid.insert((i as i32, j as i32), mirror);
+            }
+        }
+        grid.width = line.len() as i32;
+    }
+    grid.height = height;
+
+    let mut res = 0;
+
+    for i in 0..grid.height {
+        let mut new_grid = grid.clone();
+        follow(&mut new_grid, East, i, 0);
+        let energised = new_grid.marked.len();
+        res = res.max(energised)
+    }
+    for i in 0..grid.height {
+        let mut new_grid = grid.clone();
+        follow(&mut new_grid, West, i, grid.width);
+        let energised = new_grid.marked.len();
+        res = res.max(energised)
+    }
+
+    for i in 0..grid.width {
+        let mut new_grid = grid.clone();
+        follow(&mut new_grid, South, 0, i);
+        let energised = new_grid.marked.len();
+        res = res.max(energised)
+    }
+    for i in 0..grid.width {
+        let mut new_grid = grid.clone();
+        follow(&mut new_grid, North, grid.height, i);
+        let energised = new_grid.marked.len();
+        res = res.max(energised)
+    }
+
+    println!("res = {}", res);
 }
 
 fn follow(grid: &mut Grid, dir: Direction, x: i32, y: i32) {
