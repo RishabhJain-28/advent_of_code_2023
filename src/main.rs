@@ -1,5 +1,3 @@
-use std::{cmp::Reverse, collections::BinaryHeap};
-
 // mod day_1;
 // mod day_2;
 // mod day_3;
@@ -18,5 +16,5 @@ use std::{cmp::Reverse, collections::BinaryHeap};
 mod day_17;
 
 fn main() {
-    day_17::solve_1();
+    day_17::solve_2();
 }

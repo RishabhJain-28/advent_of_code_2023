@@ -4,8 +4,6 @@ use std::{
     fs, thread, time,
 };
 
-const MAX_CONSECUTIVE_STEPS: usize = 3;
-
 #[derive(Clone, Copy, PartialEq, Debug, Hash, Eq, PartialOrd, Ord)]
 enum Direction {
     North,
@@ -64,7 +62,7 @@ impl Node {
         return self.g + self.h;
     }
 }
-
+#[allow(dead_code)]
 pub fn solve_1() {
     let input = fs::read_to_string("inputs/day_17.txt").unwrap();
     let grid = input
@@ -76,27 +74,35 @@ pub fn solve_1() {
         })
         .collect::<Vec<_>>();
 
-    let res = find_route(&grid);
+    let res = find_route(&grid, 0, 3);
     println!("res = {:?}", res);
 }
 
-fn find_route(grid: &Vec<Vec<usize>>) -> usize {
+#[allow(dead_code)]
+pub fn solve_2() {
+    let input = fs::read_to_string("inputs/day_17.txt").unwrap();
+    let grid = input
+        .lines()
+        .map(|line| {
+            line.chars()
+                .map(|c| c.to_digit(10).unwrap() as usize)
+                .collect::<Vec<usize>>()
+        })
+        .collect::<Vec<_>>();
+
+    let res = find_route(&grid, 4, 10);
+    println!("res = {:?}", res);
+}
+
+fn find_route(grid: &Vec<Vec<usize>>, min: usize, max: usize) -> usize {
     let mut res = 0;
     let height = grid.len() as i32;
     let width = grid[0].len() as i32;
-    let mut vis = HashMap::new();
     let mut open = BinaryHeap::new();
     let mut close = HashSet::new();
     let mut parent = HashMap::new();
 
-    open.push(Reverse(Node::new(
-        0,
-        0,
-        0,
-        0,
-        Direction::Empty,
-        MAX_CONSECUTIVE_STEPS,
-    )));
+    open.push(Reverse(Node::new(0, 0, 0, 0, Direction::Empty, 1)));
 
     let dirs = vec![
         Direction::West,
@@ -116,31 +122,29 @@ fn find_route(grid: &Vec<Vec<usize>>) -> usize {
                 break;
             }
         };
-        // println!("node : {:?}", node);
         res = res + 1;
-        vis.insert((node.x, node.y), node.dir);
         close.insert(node.clone());
 
         for dir in &dirs {
-            let steps = if *dir == node.dir {
-                node.steps - 1
-            } else {
-                MAX_CONSECUTIVE_STEPS
-            };
+            let steps = if *dir == node.dir { node.steps + 1 } else { 1 };
             if node.dir.opposite() == *dir {
                 continue;
             }
             let (dr, dc) = dir.get_delta_vec();
             let x = dr + node.x;
             let y = dc + node.y;
-            if x >= 0 && x < height && y >= 0 && y < width && steps > 0 {
-                if x == final_x && y == final_y {
-                    // println!("found end");
+            if x >= 0 && x < height && y >= 0 && y < width && steps <= max {
+                if node.steps < min && *dir != node.dir && node.dir != Direction::Empty {
+                    continue;
+                }
+
+                if x == final_x && y == final_y && steps >= min {
                     ld = *dir;
                     ls = steps;
                     parent.insert((x, y, *dir, steps), node.clone());
                     break 'outer;
                 }
+
                 let g = grid[x as usize][y as usize] as i32 + node.g;
                 let h = i32::abs(final_x - x) + i32::abs(final_y - y);
                 let new_node = Node::new(g, h, x, y, *dir, steps);
@@ -168,7 +172,7 @@ fn find_route(grid: &Vec<Vec<usize>>) -> usize {
         }
     }
 
-    // println!("peeked nodes = {} ", res);
+    println!("peeked nodes = {} ", res);
     let mut res = 0;
     let mut vis = HashMap::new();
     let mut x = height - 1;
@@ -221,7 +225,7 @@ fn print_path(grid: &Vec<Vec<usize>>, visited_with_dir: &mut HashMap<(i32, i32),
     }
 
     println!();
-    let ten_millis = time::Duration::from_millis(30);
+    let ten_millis = time::Duration::from_millis(160);
 
     thread::sleep(ten_millis);
     clearscreen::clear().unwrap();
