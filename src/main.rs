@@ -17,5 +17,5 @@
 mod day_18;
 
 fn main() {
-    day_18::solve_1();
+    day_18::solve_2();
 }
